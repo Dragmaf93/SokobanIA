@@ -1,0 +1,196 @@
+package jdlv;
+import logic.GeneratorPathPlayer;
+public class SokobanJDLV
+{
+	int index = 0;
+	
+	
+	logic.World world;
+	java.util.List <CarryBoxJDLV> carryBoxes;
+	java.util.List <BoxJDLV> boxes;
+	java.util.List <String> playerMovement;
+
+	public SokobanJDLV(logic.World world)
+	{
+		this.world = world;
+	}
+	
+	public void generaPercorso()
+	{
+		CellJDLV player = world.getPlayerJDLV();
+		java.util.List <CellJDLV> goals = world.getGoalsJDLV();
+		java.util.List <CellJDLV> grounds = world.getGroundJDLV();
+		java.util.List <Integer> times = new java.util.ArrayList();
+		playerMovement = new java.util.ArrayList();
+		GeneratorPathPlayer generatorPathPlayer = world.getGeneratorPathPlayer();
+		
+		int time=goals.size();
+		for(int i = 1; i <= time; i++)
+			times.add(i);
+			
+		boolean solutionFounded=false;		
+		carryBoxes = new java.util.ArrayList();
+		
+		java.util.List <CellJDLV> deadlockGrounds = world.getDeadlockGroundJDLV();
+	
+		while(!solutionFounded){
+			int cont = 0;
+			boxes = world.getBoxJDLV();
+			carryBoxes.clear();
+							
+			solutionFounded=true;
+
+			<# (coloringModule)
+				IN = boxes :: positionBox;
+				IN = goals :: goal;
+				IN = player:: player;
+				IN = grounds :: ground;
+				IN = carryBoxes :: carryBox;
+				IN = deadlockGrounds :: deadlockGround;
+				OUT = boxes :: positionBox;
+				OUT = carryBoxes :: carryBox;
+				IN = times::time;
+				FILE="./src/SokobanSolver2";
+			#>
+			
+			if_no_answerset{
+				System.out.println("NO solution");
+				solutionFounded=false;
+			}
+			for_each_answerset{
+				cont++;
+				solutionFounded=false;
+				playerMovement.clear();
+				CellJDLV source = new CellJDLV(player.getI(),player.getJ());
+				java.util.Collections.sort(carryBoxes);
+					
+				for(int i = 0; i < carryBoxes.size(); i++){
+					CarryBoxJDLV carryB = carryBoxes.get(i);
+					CellJDLV target = getTarget(carryB);
+					
+					if(target.equals(source)){
+						playerMovement.add(carryB.getDirection());
+						System.out.println(cont+" IF "+playerMovement);
+						
+						source.setI(carryB.getI()); source.setJ(carryB.getJ());
+						
+					}
+					else{
+						java.util.List<CellJDLV> positionBox= getPositionBox(boxes,i+1);
+						System.out.println(positionBox);
+						for(CellJDLV box: positionBox){
+							
+							generatorPathPlayer.removeVertex(box);
+							
+						}
+						generatorPathPlayer.findPathBetween(world.getWorldGround(source.getI(),source.getJ()),target);
+						for(CellJDLV box: positionBox)
+							generatorPathPlayer.addVertex(box);
+						
+						for(CellJDLV box: positionBox)
+							world.addEdges(box);	
+
+										
+						if(!generatorPathPlayer.hasSolution()){				
+							break;
+						 }
+						generatorPathPlayer.addPlayerMovement(playerMovement);
+						playerMovement.add(carryB.getDirection());
+							
+						source.setI(carryB.getI()); source.setJ(carryB.getJ());	
+						
+						System.out.println(cont+" ELSE "+playerMovement);
+					}
+					if(i==carryBoxes.size()-1) solutionFounded=true;					
+				}
+				
+				if(solutionFounded) break;
+			}
+			
+			time++;
+			times.add(time);
+		}
+		
+		
+		
+	}
+	private int getDirection(String dir){
+		switch (dir) {
+		case "up":
+			return 0;
+		case "down":
+			return 1;
+		case "right":
+			return 2;
+		case "left":
+			return 3;
+		default: 
+			break;
+		}
+		return -1;
+	}
+	public int nextStep()
+	{
+		if (index < playerMovement.size())
+			return getDirection(playerMovement.get(index++));
+		return -1;
+	}
+
+	public int precStep()
+	{
+//		if (index > 0)
+//			return getDirection(movementsPlayer.get(index--).getDirection());
+		return -1;
+	}
+
+	public void setIndex()
+	{
+		index = 0;
+	}
+	
+	public int getNumberBoxes()
+	{
+		return world.getBoxJDLV().size();
+	}
+	
+	public CellJDLV getTarget(CarryBoxJDLV box){
+		int i=0,j=0;
+		
+		switch(box.getDirection()){
+			case "up":
+				j =  box.getJ();
+				i =  box.getI()+1;
+				break;
+			case "down":
+				j =  box.getJ();
+				i =  box.getI()-1;
+				break;
+			case "right":
+				j =  box.getJ()-1;
+				i =  box.getI();
+				break;
+			case "left":
+				j =  box.getJ()+1;
+				i =  box.getI();
+				break;
+			default: 
+			break;
+		}
+		System.out.println("target "+box.getI()+" "+box.getJ()+"    "+ i +"  " +j );
+		return world.getWorldGround(i,j);
+	}
+	
+	private java.util.List<CellJDLV> getPositionBox(java.util.List<BoxJDLV> boxes,int time){
+		java.util.List<CellJDLV> boxesToReturn = new java.util.ArrayList();
+		
+		for(BoxJDLV box: boxes)
+			if(box.getTime()==time)
+				boxesToReturn.add(world.getWorldGround(box.getI(),box.getJ()));		
+		
+		
+		
+		
+		return boxesToReturn;
+	}
+	
+}

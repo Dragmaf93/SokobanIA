@@ -1,0 +1,84 @@
+
+
+#maxint = 100.
+
+oppositeDirections(right,left). oppositeDirections(up,down). oppositeDirections(left,right). oppositeDirections(down,up).
+
+adjacent(I1,J1,I2,J2) :- ground(I1,J1), ground(I2,J2), I1=I2,J2=J1+1.
+adjacent(I1,J1,I2,J2) :- ground(I1,J1), ground(I2,J2), I1=I2,J2=J1-1.
+adjacent(I1,J1,I2,J2) :- ground(I1,J1), ground(I2,J2), J1=J2,I2=I1+1.
+adjacent(I1,J1,I2,J2) :- ground(I1,J1), ground(I2,J2), J1=J2,I2=I1-1.
+
+
+carryBox(T,Id,right,I,J) | not_carryBox(T,Id,right) :- time(T),positionBox(T,Id,I,J).
+carryBox(T,Id,left,I,J) | not_carryBox(T,Id,left) :- time(T),positionBox(T,Id,I,J).
+carryBox(T,Id,up,I,J) | not_carryBox(T,Id,up) :- time(T),positionBox(T,Id,I,J).
+carryBox(T,Id,down,I,J) | not_carryBox(T,Id,down) :- time(T),positionBox(T,Id,I,J).
+ 
+positionBox(Time2,Id,I,Jbox2) :- carryBox(Time1,Id,right,_,_),positionBox(Time1,Id,I,Jbox),
+	#int(Time2),Time2=Time1+1,#int(Jbox2),Jbox2=Jbox+1.
+positionBox(Time2,Id,I,Jbox2) :- carryBox(Time1,Id,left,_,_),positionBox(Time1,Id,I,Jbox),
+	#int(Time2),Time2=Time1+1,#int(Jbox2),Jbox2=Jbox-1.
+positionBox(Time2,Id,Ibox2,J) :- carryBox(Time1,Id,up,_,_),positionBox(Time1,Id,Ibox,J),
+	#int(Time2),Time2=Time1+1,#int(Ibox2),Ibox2=Ibox-1.
+positionBox(Time2,Id,Ibox2,J) :- carryBox(Time1,Id,down,_,_),positionBox(Time1,Id,Ibox,J),
+	#int(Time2),Time2=Time1+1,#int(Ibox2),Ibox2=Ibox+1.
+
+%non è possibile che due box siano nello stesso ground nello stesso istante
+:- positionBox(Time,Id1,I,J), positionBox(Time,Id2,I,J), Id1!=Id2.
+
+% non è possibile che nello stesso istante ci siano spostamenti di due scatole
+:-carryBox(Time,Id1,_,_,_),carryBox(Time,Id2,_,_,_),Id1!=Id2.
+:-carryBox(Time,Id,DIrection1,_,_),carryBox(Time,Id,DIrection2,_,_),DIrection1!=DIrection2.
+
+%le box spostate
+pushedBox(Time2,Id) :- positionBox(Time1,Id,I1,J1), #int(Time2),Time2=Time1+1, positionBox(Time2,Id,I2,J2), adjacent(I1,J1,I2,J2).
+%se la box non viene spostata la posizione della box è costante
+positionBox(Time2,Id,I,J) :- positionBox(Time1,Id,I,J), nextTime(Time2,Time1), not pushedBox(Time2,Id), not maxTime(Time1).
+
+nextTime(T2,T1) :- T2 = T1+1, time(T2), time(T1).
+realTime(Time):- carryBox(Time,_,_,_,_).
+
+% i tempi devono essere consecutivi
+:- carryBox(Time2,_,_,_,_), not realTime(Time1), Time2!=1,nextTime(Time2,Time1).
+
+% i tempi devono partire da 1
+:- not realTime(1).
+ 
+% non è possibile che una box non sia su un ground
+:-positionBox(_,_,I,J),not ground(I,J).
+
+%non è possibile che la scatola si trovi in un deadlockGround
+:- positionBox(_,_,I,J), deadlockGround(I,J).
+
+error(Time,Id,right,I,J1):-carryBox(Time,Id,right,_,_),positionBox(Time,Id,I,J1),not ground(I,J2),#int(J2),J2=J1-1.
+error(Time,Id,right,I,J1):-carryBox(Time,Id,right,_,_),positionBox(Time,Id,I,J1),positionBox(Time,_,I,J2),J2=J1-1.
+
+error(Time,Id,left,I,J1):-carryBox(Time,Id,left,_,_),positionBox(Time,Id,I,J1),not ground(I,J2),#int(J2),J2=J1+1.
+error(Time,Id,left,I,J1):-carryBox(Time,Id,left,_,_),positionBox(Time,Id,I,J1),positionBox(Time,_,I,J2),J2=J1+1.
+
+error(Time,Id,up,I1,J):-carryBox(Time,Id,up,_,_),positionBox(Time,Id,I1,J),not ground(I2,J),#int(I2),I2=I1+1.
+error(Time,Id,up,I1,J):-carryBox(Time,Id,up,_,_),positionBox(Time,Id,I1,J),positionBox(Time,_,I2,J),I2=I1+1.
+
+error(Time,Id,down,I1,J):-carryBox(Time,Id,down,_,_),positionBox(Time,Id,I1,J),not ground(I2,J),#int(I2),I2=I1-1.
+error(Time,Id,down,I1,J):-carryBox(Time,Id,down,_,_),positionBox(Time,Id,I1,J),positionBox(Time,_,I2,J),I2=I1-1.
+
+:-error(_,_,_,_,_).
+
+% non è possibile che all ultimo istante non ci sia il goal
+maxTime(Time) :- #int(Time), Time=#max{T: positionPlayer(T,_,_)}.
+
+lastPositionBox(Id,I,J):- positionBox(Time,Id,I,J), Time = #max{T: pushedBox(T,Id)}.
+goalWithBox(I,J):-goal(I,J), lastPositionBox(Id,I,J).
+:-goal(I,J),not goalWithBox(I,J).
+
+% :- goalWithBox(I,J), lastPositionBox(Id1,I,J), lastPositionBox(Id2,I,J), Id1 != Id2.
+
+% :~ positionPlayer(Time,_,_). [1:1]
+
+%***************************************************************************************************************************************
+
+%:-carryBox(Time1,Id1,_,_,_),carryBox(Time2,Id2,_,_,_),carryBox(Time3,Id1,_,_,_),Time1<Time2,Time2<Time3,Id2!=Id1.
+stupidCarry(Time1,Id):-carryBox(Time1,Id,Dir1,_,_),carryBox(Time2,Id,Dir2,_,_),oppositeDirections(Dir1,Dir2),Time1=Time2-1,carryBox(Time3,Id,Dir1,_,_),Time3=Time2+1.
+:-stupidCarry(_,_).
+

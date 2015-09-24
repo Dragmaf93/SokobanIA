@@ -1,0 +1,69 @@
+#maxint = 100.
+box(Id):- positionBox(_,Id,_,_).
+
+adjacent(I1,J1,I2,J2):-ground(I1,J1),ground(I2,J2),I1=I2,J2=J1+1.
+adjacent(I1,J1,I2,J2):-ground(I1,J1),ground(I2,J2),I1=I2,J2=J1-1.
+adjacent(I1,J1,I2,J2):-ground(I1,J1),ground(I2,J2),J1=J2,I2=I1+1.
+adjacent(I1,J1,I2,J2):-ground(I1,J1),ground(I2,J2),J1=J2,I2=I1-1.
+ 
+time(1..20).
+movementPlayer(right,T) | not_movementPlayer(right,T) :- time(T).
+movementPlayer(left,T) | not_movementPlayer(left,T) :- time(T).
+movementPlayer(up,T) | not_movementPlayer(up,T) :- time(T).
+movementPlayer(down,T) | not_movementPlayer(down,T) :- time(T).
+ 
+
+% non è possibile che nello stesso istante ci siano movimenti diversi
+:-movementPlayer(Direction1,Time),movementPlayer(Direction2,Time),Direction2!=Direction1.
+
+nextTime(T2,T1) :- T2 = T1+1, time(T2), time(T1).
+realTime(Time):- movementPlayer(_,Time).
+
+% i tempi devono essere consecutivi
+:- movementPlayer(_,Time2), not realTime(Time1), Time2!=1,nextTime(Time2,Time1).
+
+%  i tempi devono partire da 1
+:- not realTime(1).
+ 
+positionPlayer(1,I,J):-player(I,J).
+% calcolo delle posizioni successive del player
+positionPlayer(Time2,I1,J2):- movementPlayer(right,Time1),#int(J2),J2=J1+1, nextTime(Time2,Time1),positionPlayer(Time1,I1,J1).
+positionPlayer(Time2,I1,J2):- movementPlayer(left,Time1),#int(J2),J2=J1-1, nextTime(Time2,Time1),positionPlayer(Time1,I1,J1).
+positionPlayer(Time2,I2,J1):- movementPlayer(up,Time1),#int(I2),I2=I1-1, nextTime(Time2,Time1),positionPlayer(Time1,I1,J1).
+positionPlayer(Time2,I2,J1):- movementPlayer(down,Time1),#int(I2),I2=I1+1, nextTime(Time2,Time1),positionPlayer(Time1,I1,J1).
+
+% non è possibile che data una posizione, non sia su un ground
+:-positionPlayer(_,I,J), not ground(I,J).
+ 
+% non è possibile che allultimo istante non ci sia il goal
+maxTime(Time):-#int(Time), Time=#max{T: positionPlayer(T,_,_)}.
+
+lastPositionBox(I,J):-positionBox(Time,Id,I,J),Time = #max{T: pushedBox(T,Id)}.
+goalWithBox(I,J):-goal(I,J),lastPositionBox(I,J).
+:-goal(I,J),not goalWithBox(I,J).
+
+%:~ positionPlayer(Time,_,_). [1:1]
+
+%le box spostate
+pushedBox(Time2,Id):-positionBox(Time1,Id,I1,J1),nextTime(Time2,Time1),positionBox(Time2,Id,I2,J2),adjacent(I1,J1,I2,J2).
+%se la box non viene spostata la posizione della box è costante
+positionBox(Time2,Id,I,J):- positionBox(Time1,Id,I,J),nextTime(Time2,Time1),not pushedBox(Time2,Id), not maxTime(Time1).
+
+%gli spostamenti delle box
+positionBox(Time2,Id,I,Jbox2):- movementPlayer(right,Time1),positionPlayer(Time1,I,Jplayer),positionBox(Time1,Id,I,Jbox),
+	Jbox=Jplayer+1,nextTime(Time2,Time1),#int(Jbox2),Jbox2=Jbox+1.
+positionBox(Time2,Id,I,Jbox2):- movementPlayer(left,Time1),positionPlayer(Time1,I,Jplayer),positionBox(Time1,Id,I,Jbox),
+	Jbox=Jplayer-1,nextTime(Time2,Time1),#int(Jbox2),Jbox2=Jbox-1.
+positionBox(Time2,Id,Ibox2,J):- movementPlayer(up,Time1),positionPlayer(Time1,Iplayer,J),positionBox(Time1,Id,Ibox,J),
+	Ibox=Iplayer-1,nextTime(Time2,Time1),#int(Ibox2),Ibox2=Ibox-1.
+positionBox(Time2,Id,Ibox2,J):- movementPlayer(down,Time1),positionPlayer(Time1,Iplayer,J),positionBox(Time1,Id,Ibox,J),
+	Ibox=Iplayer+1,nextTime(Time2,Time1),#int(Ibox2),Ibox2=Ibox+1.
+
+%non è possibile che la scatola si trovi tra due muri
+:-positionBox(_,_,I,J),deadlockGround(I,J).
+
+%non è possibile che una box non sia su un ground
+:-positionBox(_,_,I,J), not ground(I,J).
+
+%non è possibile che due box siano nello stesso ground nello stesso istante
+:-positionBox(Time,Id1,I,J),positionBox(Time,Id2,I,J),Id1!=Id2.
