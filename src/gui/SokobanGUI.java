@@ -39,7 +39,7 @@ public class SokobanGUI extends Application {
 	private GridPane gridForButton;
 	
 	private Button reset;
-	private String levelChoised = "level8";
+	private String levelChoised = "level7";
 	private Label stepDone;
 	private ImageView step;
 	private Button resolver;

@@ -10,10 +10,10 @@ adjacent(I1,J1,I2,J2) :- ground(I1,J1), ground(I2,J2), J1=J2,I2=I1+1.
 adjacent(I1,J1,I2,J2) :- ground(I1,J1), ground(I2,J2), J1=J2,I2=I1-1.
 
 
-carryBox(T,Id,right,I,J) | not_carryBox(T,Id,right) :- time(T),positionBox(T,Id,I,J).
-carryBox(T,Id,left,I,J) | not_carryBox(T,Id,left) :- time(T),positionBox(T,Id,I,J).
-carryBox(T,Id,up,I,J) | not_carryBox(T,Id,up) :- time(T),positionBox(T,Id,I,J).
-carryBox(T,Id,down,I,J) | not_carryBox(T,Id,down) :- time(T),positionBox(T,Id,I,J).
+carryBox(T,Id,right,I,J) | not_carryBox(T,Id,right) :- time(T),positionBox(T,Id,I,J),noDeadlockGround(I,J2),J2=J+1,#int(J2).
+carryBox(T,Id,left,I,J) | not_carryBox(T,Id,left) :- time(T),positionBox(T,Id,I,J),noDeadlockGround(I,J2),J2=J-1,#int(J2).
+carryBox(T,Id,up,I,J) | not_carryBox(T,Id,up) :- time(T),positionBox(T,Id,I,J),noDeadlockGround(I2,J),I2=I-1,#int(I2).
+carryBox(T,Id,down,I,J) | not_carryBox(T,Id,down) :- time(T),positionBox(T,Id,I,J),noDeadlockGround(I2,J),I2=I+1,#int(I2).
  
 positionBox(Time2,Id,I,Jbox2) :- carryBox(Time1,Id,right,_,_),positionBox(Time1,Id,I,Jbox),
 	#int(Time2),Time2=Time1+1,#int(Jbox2),Jbox2=Jbox+1.
@@ -49,21 +49,21 @@ realTime(Time):- carryBox(Time,_,_,_,_).
 :-positionBox(_,_,I,J),not ground(I,J).
 
 %non è possibile che la scatola si trovi in un deadlockGround
-:- positionBox(_,_,I,J), deadlockGround(I,J).
+%:- positionBox(_,_,I,J), deadlockGround(I,J).
 
-error(Time,Id,right,I,J1):-carryBox(Time,Id,right,_,_),positionBox(Time,Id,I,J1),not ground(I,J2),#int(J2),J2=J1-1.
-error(Time,Id,right,I,J1):-carryBox(Time,Id,right,_,_),positionBox(Time,Id,I,J1),positionBox(Time,_,I,J2),J2=J1-1.
+noReachable(Time,Id,right,I,J1):-carryBox(Time,Id,right,_,_),positionBox(Time,Id,I,J1),not ground(I,J2),#int(J2),J2=J1-1.
+noReachable(Time,Id,right,I,J1):-carryBox(Time,Id,right,_,_),positionBox(Time,Id,I,J1),positionBox(Time,_,I,J2),J2=J1-1.
 
-error(Time,Id,left,I,J1):-carryBox(Time,Id,left,_,_),positionBox(Time,Id,I,J1),not ground(I,J2),#int(J2),J2=J1+1.
-error(Time,Id,left,I,J1):-carryBox(Time,Id,left,_,_),positionBox(Time,Id,I,J1),positionBox(Time,_,I,J2),J2=J1+1.
+noReachable(Time,Id,left,I,J1):-carryBox(Time,Id,left,_,_),positionBox(Time,Id,I,J1),not ground(I,J2),#int(J2),J2=J1+1.
+noReachable(Time,Id,left,I,J1):-carryBox(Time,Id,left,_,_),positionBox(Time,Id,I,J1),positionBox(Time,_,I,J2),J2=J1+1.
 
-error(Time,Id,up,I1,J):-carryBox(Time,Id,up,_,_),positionBox(Time,Id,I1,J),not ground(I2,J),#int(I2),I2=I1+1.
-error(Time,Id,up,I1,J):-carryBox(Time,Id,up,_,_),positionBox(Time,Id,I1,J),positionBox(Time,_,I2,J),I2=I1+1.
+noReachable(Time,Id,up,I1,J):-carryBox(Time,Id,up,_,_),positionBox(Time,Id,I1,J),not ground(I2,J),#int(I2),I2=I1+1.
+noReachable(Time,Id,up,I1,J):-carryBox(Time,Id,up,_,_),positionBox(Time,Id,I1,J),positionBox(Time,_,I2,J),I2=I1+1.
 
-error(Time,Id,down,I1,J):-carryBox(Time,Id,down,_,_),positionBox(Time,Id,I1,J),not ground(I2,J),#int(I2),I2=I1-1.
-error(Time,Id,down,I1,J):-carryBox(Time,Id,down,_,_),positionBox(Time,Id,I1,J),positionBox(Time,_,I2,J),I2=I1-1.
+noReachable(Time,Id,down,I1,J):-carryBox(Time,Id,down,_,_),positionBox(Time,Id,I1,J),not ground(I2,J),#int(I2),I2=I1-1.
+noReachable(Time,Id,down,I1,J):-carryBox(Time,Id,down,_,_),positionBox(Time,Id,I1,J),positionBox(Time,_,I2,J),I2=I1-1.
 
-:-error(_,_,_,_,_).
+:-noReachable(_,_,_,_,_).
 
 % non è possibile che all ultimo istante non ci sia il goal
 maxTime(Time) :- #int(Time), Time=#max{T: positionPlayer(T,_,_)}.
@@ -82,3 +82,4 @@ goalWithBox(I,J):-goal(I,J), lastPositionBox(Id,I,J).
 stupidCarry(Time1,Id):-carryBox(Time1,Id,Dir1,_,_),carryBox(Time2,Id,Dir2,_,_),oppositeDirections(Dir1,Dir2),Time1=Time2-1,carryBox(Time3,Id,Dir1,_,_),Time3=Time2+1.
 :-stupidCarry(_,_).
 
+noDeadlockGround(I,J):-ground(I,J),not deadlock(I,J).
