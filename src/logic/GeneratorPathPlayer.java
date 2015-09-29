@@ -29,9 +29,12 @@ public class GeneratorPathPlayer {
 	}
 	
 	public void findPathBetween(CellJDLV start,CellJDLV finish){
-		
-//		DijkstraShortestPath<CellJDLV, Edge> dijkstraShortestPath = new DijkstraShortestPath<CellJDLV, Edge>(worldGraph, start, finish);
-		lastGeneratedPath = DijkstraShortestPath.findPathBetween(worldGraph, start, finish);
+
+		System.out.println(start+" "+ finish);
+		if(!worldGraph.containsVertex(finish))
+			lastGeneratedPath=null;
+		else 
+			lastGeneratedPath = DijkstraShortestPath.findPathBetween(worldGraph, start, finish);
 		System.out.println(lastGeneratedPath);
 	}
 	

@@ -22,7 +22,14 @@ public class SokobanJDLV
 		java.util.List <CellJDLV> grounds = world.getGroundJDLV();
 		java.util.List <Integer> times = new java.util.ArrayList();
 		playerMovement = new java.util.ArrayList();
+		boxes = world.getBoxJDLV();
 		GeneratorPathPlayer generatorPathPlayer = world.getGeneratorPathPlayer();
+	
+		java.util.List<BoxJDLV> reachableBoxes = new java.util.ArrayList();
+		findReachableBox(player,boxes,reachableBoxes);
+		
+		java.util.List<FirstDirectionJDLV> firstDirection = new java.util.ArrayList();	
+		findFirstDirection(player,reachableBoxes,boxes,firstDirection);
 		
 		int time=goals.size();
 		for(int i = 1; i <= time; i++)
@@ -45,11 +52,13 @@ public class SokobanJDLV
 				IN = goals :: goal;
 				IN = player:: player;
 				IN = grounds :: ground;
+				IN = reachableBoxes :: reachableBox;
 				IN = carryBoxes :: carryBox;
 				IN = deadlockGrounds :: deadlockGround;
 				OUT = boxes :: positionBox;
 				OUT = carryBoxes :: carryBox;
 				IN = times::time;
+				IN = firstDirection:: firstDirection;
 				FILE="./src/SokobanSolver2";
 			#>
 			
@@ -114,6 +123,74 @@ public class SokobanJDLV
 		
 		
 	}
+	private void findFirstDirection(CellJDLV player,java.util.List<BoxJDLV> reachableBoxes,java.util.List<BoxJDLV> boxes,
+		java.util.List<FirstDirectionJDLV> firstDirection){
+		
+		GeneratorPathPlayer generatorPathPlayer = world.getGeneratorPathPlayer();
+		
+		for(BoxJDLV box: boxes)
+			generatorPathPlayer.removeVertex(world.getWorldGround(box.getI(),box.getJ()));
+		
+		for(BoxJDLV reachableBox: reachableBoxes){
+			
+			
+			generatorPathPlayer.findPathBetween(world.getWorldGround(player.getI(),player.getJ()),
+					world.getWorldGround(reachableBox.getI(),reachableBox.getJ()-1));
+					
+			if(generatorPathPlayer.hasSolution())
+				firstDirection.add(new FirstDirectionJDLV(reachableBox.getId(),"right"));
+							
+			generatorPathPlayer.findPathBetween(world.getWorldGround(player.getI(),player.getJ()),
+					world.getWorldGround(reachableBox.getI(),reachableBox.getJ()+1));
+					
+			if(generatorPathPlayer.hasSolution())
+				firstDirection.add(new FirstDirectionJDLV(reachableBox.getId(),"left"));
+				
+			generatorPathPlayer.findPathBetween(world.getWorldGround(player.getI(),player.getJ()),
+					world.getWorldGround(reachableBox.getI()+1,reachableBox.getJ()));
+					
+			if(generatorPathPlayer.hasSolution())
+				firstDirection.add(new FirstDirectionJDLV(reachableBox.getId(),"up"));
+				
+			generatorPathPlayer.findPathBetween(world.getWorldGround(player.getI(),player.getJ()),
+					world.getWorldGround(reachableBox.getI()-1,reachableBox.getJ()));
+					
+			if(generatorPathPlayer.hasSolution())
+				firstDirection.add(new FirstDirectionJDLV(reachableBox.getId(),"down"));
+				
+		}
+		for(BoxJDLV box:boxes)
+			generatorPathPlayer.addVertex(world.getWorldGround(box.getI(),box.getJ()));		
+						
+		for(BoxJDLV box:boxes)
+			world.addEdges(world.getWorldGround(box.getI(),box.getJ()));
+	}
+	
+	private void findReachableBox(CellJDLV player,java.util.List<BoxJDLV> boxes,java.util.List<BoxJDLV> reachableBoxes){
+		GeneratorPathPlayer generatorPathPlayer = world.getGeneratorPathPlayer();
+		
+		for(BoxJDLV target: boxes){
+			
+			for(BoxJDLV box:boxes)
+				if(target!=box)
+					generatorPathPlayer.removeVertex(world.getWorldGround(box.getI(),box.getJ()));
+				
+				generatorPathPlayer.findPathBetween(world.getWorldGround(player.getI(),player.getJ()),
+					world.getWorldGround(target.getI(),target.getJ()));
+					
+			for(BoxJDLV box:boxes)
+				if(target!=box)
+					generatorPathPlayer.addVertex(world.getWorldGround(box.getI(),box.getJ()));		
+						
+			for(BoxJDLV box:boxes)
+				if(target!=box)
+					world.addEdges(world.getWorldGround(box.getI(),box.getJ()));
+				
+			if(generatorPathPlayer.hasSolution())
+				reachableBoxes.add(target);
+		}
+	}
+	
 	private int getDirection(String dir){
 		switch (dir) {
 		case "up":

@@ -381,4 +381,8 @@ public class World {
 		return worldGround[i][j];
 	}
 	
+	public ObjectGame getObjectGame(int i, int j){
+		return world[i][j];
+	}
+	
 }

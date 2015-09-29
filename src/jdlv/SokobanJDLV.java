@@ -18,7 +18,12 @@ java.util.List<CellJDLV> goals=world.getGoalsJDLV();
 java.util.List<CellJDLV> grounds=world.getGroundJDLV();
 java.util.List<Integer> times= new java.util.ArrayList();
 playerMovement= new java.util.ArrayList();
+boxes=world.getBoxJDLV();
 GeneratorPathPlayer generatorPathPlayer=world.getGeneratorPathPlayer();
+java.util.List<BoxJDLV> reachableBoxes= new java.util.ArrayList();
+findReachableBox(player,boxes,reachableBoxes);
+java.util.List<FirstDirectionJDLV> firstDirection= new java.util.ArrayList();
+findFirstDirection(player,reachableBoxes,boxes,firstDirection);
 int time=goals.size();
 for(int i= 1 ;i<=time;i++)
 times.add(i);
@@ -66,6 +71,12 @@ it.unical.mat.jdlv.program.JDLV_Logger.getInstance().logInfoMessage("Add in-mapp
 	// ---- END - addInMapping ---- 
 
 	// ---- START - addInMapping ---- 
+_JDLV_PROGRAM_coloringModule.addText(it.unical.mat.jdlv.program.TypeSolver.getNameTranslation(reachableBoxes,"reachableBox"));
+it.unical.mat.jdlv.program.JDLV_Logger.getInstance().logInfoMessage("Add in-mapping 'reachableBoxes::reachableBox' in module coloringModule:"+ it.unical.mat.jdlv.program.JDLV_Logger.getInstance().getPrettyCode(it.unical.mat.jdlv.program.TypeSolver.getNameTranslation(reachableBoxes,"reachableBox"), 0));
+
+	// ---- END - addInMapping ---- 
+
+	// ---- START - addInMapping ---- 
 _JDLV_PROGRAM_coloringModule.addText(it.unical.mat.jdlv.program.TypeSolver.getNameTranslation(carryBoxes,"carryBox"));
 it.unical.mat.jdlv.program.JDLV_Logger.getInstance().logInfoMessage("Add in-mapping 'carryBoxes::carryBox' in module coloringModule:"+ it.unical.mat.jdlv.program.JDLV_Logger.getInstance().getPrettyCode(it.unical.mat.jdlv.program.TypeSolver.getNameTranslation(carryBoxes,"carryBox"), 0));
 
@@ -82,6 +93,12 @@ it.unical.mat.jdlv.program.JDLV_Logger.getInstance().logInfoMessage("Add out-map
 	// ---- START - addInMapping ---- 
 _JDLV_PROGRAM_coloringModule.addText(it.unical.mat.jdlv.program.TypeSolver.getNameTranslation(times,"time"));
 it.unical.mat.jdlv.program.JDLV_Logger.getInstance().logInfoMessage("Add in-mapping 'times::time' in module coloringModule:"+ it.unical.mat.jdlv.program.JDLV_Logger.getInstance().getPrettyCode(it.unical.mat.jdlv.program.TypeSolver.getNameTranslation(times,"time"), 0));
+
+	// ---- END - addInMapping ---- 
+
+	// ---- START - addInMapping ---- 
+_JDLV_PROGRAM_coloringModule.addText(it.unical.mat.jdlv.program.TypeSolver.getNameTranslation(firstDirection,"firstDirection"));
+it.unical.mat.jdlv.program.JDLV_Logger.getInstance().logInfoMessage("Add in-mapping 'firstDirection::firstDirection' in module coloringModule:"+ it.unical.mat.jdlv.program.JDLV_Logger.getInstance().getPrettyCode(it.unical.mat.jdlv.program.TypeSolver.getNameTranslation(firstDirection,"firstDirection"), 0));
 
 	// ---- END - addInMapping ---- 
 
@@ -163,6 +180,48 @@ _JDLV_PROGRAM_coloringModule.cleanText();
 	// ---- END - prepareJDLVCall ---- 
 time++;
 times.add(time);
+}
+}
+private  void  findFirstDirection(CellJDLV player,java.util.List<BoxJDLV> reachableBoxes,java.util.List<BoxJDLV> boxes,java.util.List<FirstDirectionJDLV> firstDirection){
+GeneratorPathPlayer generatorPathPlayer=world.getGeneratorPathPlayer();
+for(BoxJDLV box:boxes)
+generatorPathPlayer.removeVertex(world.getWorldGround(box.getI(),box.getJ()));
+for(BoxJDLV reachableBox:reachableBoxes)
+{
+generatorPathPlayer.findPathBetween(world.getWorldGround(player.getI(),player.getJ()),world.getWorldGround(reachableBox.getI(),reachableBox.getJ()- 1 ));
+if(generatorPathPlayer.hasSolution())
+firstDirection.add( new FirstDirectionJDLV(reachableBox.getId(), "right" ));
+generatorPathPlayer.findPathBetween(world.getWorldGround(player.getI(),player.getJ()),world.getWorldGround(reachableBox.getI(),reachableBox.getJ()+ 1 ));
+if(generatorPathPlayer.hasSolution())
+firstDirection.add( new FirstDirectionJDLV(reachableBox.getId(), "left" ));
+generatorPathPlayer.findPathBetween(world.getWorldGround(player.getI(),player.getJ()),world.getWorldGround(reachableBox.getI()+ 1 ,reachableBox.getJ()));
+if(generatorPathPlayer.hasSolution())
+firstDirection.add( new FirstDirectionJDLV(reachableBox.getId(), "up" ));
+generatorPathPlayer.findPathBetween(world.getWorldGround(player.getI(),player.getJ()),world.getWorldGround(reachableBox.getI()- 1 ,reachableBox.getJ()));
+if(generatorPathPlayer.hasSolution())
+firstDirection.add( new FirstDirectionJDLV(reachableBox.getId(), "down" ));
+}
+for(BoxJDLV box:boxes)
+generatorPathPlayer.addVertex(world.getWorldGround(box.getI(),box.getJ()));
+for(BoxJDLV box:boxes)
+world.addEdges(world.getWorldGround(box.getI(),box.getJ()));
+}
+private  void  findReachableBox(CellJDLV player,java.util.List<BoxJDLV> boxes,java.util.List<BoxJDLV> reachableBoxes){
+GeneratorPathPlayer generatorPathPlayer=world.getGeneratorPathPlayer();
+for(BoxJDLV target:boxes)
+{
+for(BoxJDLV box:boxes)
+if(target!=box)
+generatorPathPlayer.removeVertex(world.getWorldGround(box.getI(),box.getJ()));
+generatorPathPlayer.findPathBetween(world.getWorldGround(player.getI(),player.getJ()),world.getWorldGround(target.getI(),target.getJ()));
+for(BoxJDLV box:boxes)
+if(target!=box)
+generatorPathPlayer.addVertex(world.getWorldGround(box.getI(),box.getJ()));
+for(BoxJDLV box:boxes)
+if(target!=box)
+world.addEdges(world.getWorldGround(box.getI(),box.getJ()));
+if(generatorPathPlayer.hasSolution())
+reachableBoxes.add(target);
 }
 }
 private int getDirection(String dir){
