@@ -10,10 +10,13 @@ public class SokobanJDLV
 	java.util.List <BoxJDLV> boxes;
 	java.util.List <String> playerMovement;
 
+	boolean solutionDone;
+
 	public SokobanJDLV(logic.World world)
 	{
 		this.world = world;
 	}
+	
 	public void solver(){
 		Solver solver = new Solver(this);
 		solver.start();
@@ -42,6 +45,8 @@ public class SokobanJDLV
 		carryBoxes = new java.util.ArrayList();
 		
 		java.util.List <CellJDLV> deadlockGrounds = world.getDeadlockGroundJDLV();
+	
+		solutionDone = false;
 	
 		while(!solutionFounded){
 			int cont = 0;
@@ -116,16 +121,19 @@ public class SokobanJDLV
 					if(i==carryBoxes.size()-1) solutionFounded=true;					
 				}
 				
-				if(solutionFounded) break;
+				if(solutionFounded)
+				{
+					solutionDone = true;
+					break;
+				} 
 			}
 			
 			time++;
 			times.add(time);
 		}
 		
-		
-		
 	}
+	
 	private void findFirstDirection(CellJDLV player,java.util.List<BoxJDLV> reachableBoxes,java.util.List<BoxJDLV> boxes,
 		java.util.List<FirstDirectionJDLV> firstDirection){
 		
@@ -231,6 +239,16 @@ public class SokobanJDLV
 	public int getNumberBoxes()
 	{
 		return world.getBoxJDLV().size();
+	}
+	
+	public boolean getSolutionDone()
+	{
+		return solutionDone;
+	}
+	
+	public void setSolutionDone(boolean solutionDone)
+	{
+		this.solutionDone = solutionDone;
 	}
 	
 	public CellJDLV getTarget(CarryBoxJDLV box){

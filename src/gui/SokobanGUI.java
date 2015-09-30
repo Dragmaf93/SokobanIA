@@ -13,6 +13,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
@@ -96,6 +97,9 @@ public class SokobanGUI extends Application {
 			
 		});
 		
+		levelBox.setOpacity(0.5);
+		levelBox.setTooltip(new Tooltip("Level"));
+		
 		gridForButton.add(levelBox,25,3);
 		Scene scene = new Scene(grid, width, height);
 		primaryStage.setScene(scene);
@@ -162,6 +166,12 @@ public class SokobanGUI extends Application {
 				if (mainPane.getWin())
 					mainPane.addWin();
 				
+				if (sokobanJDLV.getSolutionDone())
+				{
+					generateButtonNext();
+					sokobanJDLV.setSolutionDone(false);
+				}
+				
 			}
 		}.start();
 		
@@ -207,7 +217,7 @@ public class SokobanGUI extends Application {
 //				if(step!=-1)
 //					mainPane.movePlayer(step);
 				
-				generateButtonNext();
+//				generateButtonNext();
 			}
 			
 		});

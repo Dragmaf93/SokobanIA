@@ -9,6 +9,7 @@ logic.World world;
 java.util.List<CarryBoxJDLV> carryBoxes;
 java.util.List<BoxJDLV> boxes;
 java.util.List<String> playerMovement;
+boolean solutionDone;
 public SokobanJDLV(logic.World world){
  this .world=world;
 }
@@ -34,6 +35,7 @@ times.add(i);
 boolean solutionFounded= false ;
 carryBoxes= new java.util.ArrayList();
 java.util.List<CellJDLV> deadlockGrounds=world.getDeadlockGroundJDLV();
+solutionDone= false ;
 while(!solutionFounded)
 {
 int cont= 0 ;
@@ -166,7 +168,10 @@ if(i==carryBoxes.size()- 1 )
 solutionFounded= true ;
 }
 if(solutionFounded)
+{
+solutionDone= true ;
  break ;
+}
 }
 if(_JDLV_INVOCATION_coloringModule.haveModel()==false){
 System.out.println( "NO solution" );
@@ -257,6 +262,12 @@ index= 0 ;
 }
 public int getNumberBoxes(){
 return world.getBoxJDLV().size();
+}
+public boolean getSolutionDone(){
+return solutionDone;
+}
+public  void  setSolutionDone(boolean solutionDone){
+ this .solutionDone=solutionDone;
 }
 public CellJDLV getTarget(CarryBoxJDLV box){
 int i= 0 , j= 0 ;
