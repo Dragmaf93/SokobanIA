@@ -12,7 +12,11 @@ java.util.List<String> playerMovement;
 public SokobanJDLV(logic.World world){
  this .world=world;
 }
-public  void  generaPercorso(){
+public  void  solver(){
+Solver solver= new Solver( this );
+solver.start();
+}
+public  void  findPath(){
 CellJDLV player=world.getPlayerJDLV();
 java.util.List<CellJDLV> goals=world.getGoalsJDLV();
 java.util.List<CellJDLV> grounds=world.getGroundJDLV();

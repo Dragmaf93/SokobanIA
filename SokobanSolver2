@@ -86,3 +86,6 @@ stupidCarry(Time1,Id):-carryBox(Time1,Id,Dir1,_,_),carryBox(Time2,Id,Dir2,_,_),o
 :-stupidCarry(_,_).
 
 noDeadlockGround(I,J):-ground(I,J),not deadlock(I,J).
+
+
+

@@ -1,11 +1,10 @@
 package gui;
 
-import java.util.ArrayList;
+
+import java.io.File;
 
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
-import jdlv.CellJDLV;
-import logic.Goal;
 import logic.Player;
 import logic.World;
 
@@ -25,9 +24,9 @@ public class MainPane extends Pane {
 		win = new ImageView("file:image/win2.png");
 	}
 	
-	public void loadLevel(String level)
+	public void loadLevel(File level)
 	{
-		world.loadMatrix("./level/"+level);
+		world.loadMatrix(level);
 
 		player = world.getPlayer();
 		drawLevel();
@@ -47,9 +46,7 @@ public class MainPane extends Pane {
 					this.getChildren().add(imageManager.drawGoal(i, j));
 				this.getChildren().add(imageManager.drawImage(world.getObject(i, j)));
 			}
-		}
-		
-		
+		}	
 	}
 
 	public void removeLevel()
@@ -66,6 +63,7 @@ public class MainPane extends Pane {
 		winner = false;
 		step = 0;
 		this.getChildren().remove(win);
+		this.getChildren().clear();
 	}
 	
 	public void movePlayer(int direction) {

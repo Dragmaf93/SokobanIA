@@ -1,6 +1,7 @@
 package logic;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -37,9 +38,10 @@ public class World {
 		return world[i][j];
 	}
 
-	public void loadMatrix(String path) {
+	public void loadMatrix(File file) {
 		try {
-			FileReader filein = new FileReader(path);
+			System.out.println(file);
+			FileReader filein = new FileReader(file);
 			int next;
 			int currentRow = 0, currentColumn = 0;
 			BufferedReader b = new BufferedReader(filein);

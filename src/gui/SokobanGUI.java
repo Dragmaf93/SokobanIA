@@ -1,13 +1,17 @@
 package gui;
+import org.jgrapht.experimental.alg.color.GreedyColoring;
+
 import javafx.animation.AnimationTimer;
 import javafx.application.*;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -19,12 +23,10 @@ import javafx.scene.layout.BackgroundPosition;
 import javafx.scene.layout.BackgroundRepeat;
 import javafx.scene.layout.BackgroundSize;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import logic.Player;
-import logic.World;
 import jdlv.SokobanJDLV;
 
 public class SokobanGUI extends Application {
@@ -34,12 +36,13 @@ public class SokobanGUI extends Application {
 	private boolean firstTime=true;
 	private GridPane grid;
 	private SokobanJDLV sokobanJDLV;
-	
 
 	private GridPane gridForButton;
 	
+	private Levels levels;
+	private ChoiceBox<String> levelBox;
+	private String levelChoised;
 	private Button reset;
-	private String levelChoised = "level7";
 	private Label stepDone;
 	private ImageView step;
 	private Button resolver;
@@ -52,6 +55,7 @@ public class SokobanGUI extends Application {
 	@Override
 	public void start(Stage primaryStage) throws Exception
 	{
+		
 		grid = new GridPane();
 		grid.setHgap(10);
 		grid.setVgap(10);
@@ -63,10 +67,12 @@ public class SokobanGUI extends Application {
 				BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, BackgroundSize.DEFAULT)));
 		
 		createGridForButton();
+		levels = new Levels();
 		
 		mainPane = new MainPane();
 		mainPane.setBackground(Background.EMPTY);
-		mainPane.loadLevel(levelChoised );
+		levelChoised="level1";
+		mainPane.loadLevel(levels.getLevel(levelChoised) );
 		grid.add(mainPane,10,0);
 
 		step = new ImageView("file:image/step.png");
@@ -76,9 +82,25 @@ public class SokobanGUI extends Application {
 		stepDone.setTextFill(Color.web("277ce5"));
 		grid.add(stepDone,10,1);
 		
+		levelBox = new ChoiceBox<>(FXCollections.observableArrayList(levels.getLevelsName()));
+		levelBox.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
+
+			@Override
+			public void changed(ObservableValue<? extends Number> arg0,
+					Number oldValue, Number newValue) {		
+				
+				levelChoised=levels.getLevel(newValue.intValue());
+//				mainPane.loadLevel(levels.getLevel(levelChoised));
+				reset();
+			}
+			
+		});
+		
+		gridForButton.add(levelBox,25,3);
 		Scene scene = new Scene(grid, width, height);
 		primaryStage.setScene(scene);
 		primaryStage.setResizable(true);
+
 		
 		scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
 
@@ -158,13 +180,10 @@ public class SokobanGUI extends Application {
 		
 		reset.setOnAction(new EventHandler<ActionEvent>() {
 
+
 			@Override
 			public void handle(ActionEvent arg0) {
-				mainPane.removeLevel();
-				mainPane.loadLevel(levelChoised);
-				firstTime = true;
-				gridForButton.getChildren().remove(stepNext);
-				sokobanJDLV.setIndex();
+				reset();
 			}
 			
 		});
@@ -181,7 +200,7 @@ public class SokobanGUI extends Application {
 			@Override
 			public void handle(ActionEvent arg0) {
 				if(firstTime){
-					sokobanJDLV.generaPercorso();
+					sokobanJDLV.solver();
 					firstTime=false;
 				}
 //				int step =sokobanJDLV.nextStep();
@@ -198,6 +217,13 @@ public class SokobanGUI extends Application {
 		grid.add(gridForButton, 11, 0);
 	}
 	
+	private void reset(){
+		mainPane.removeLevel();
+		mainPane.loadLevel(levels.getLevel(levelChoised));
+		firstTime = true;
+		gridForButton.getChildren().remove(stepNext);
+		sokobanJDLV.setIndex();
+	}
 	private void generateButtonNext()
 	{
 		stepNext = new Button();
