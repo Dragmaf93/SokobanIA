@@ -67,7 +67,7 @@ public class SokobanJDLV
 				OUT = carryBoxes :: carryBox;
 				IN = times::time;
 				IN = firstDirection:: firstDirection;
-				FILE="./src/SokobanSolver2";
+				FILE="./src/progetto.txt";
 			#>
 			
 			if_no_answerset{

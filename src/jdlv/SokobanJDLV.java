@@ -114,11 +114,11 @@ try{
 _JDLV_INVOCATION_coloringModule=it.unical.mat.wrapper.DLVWrapper.getInstance().createInvocation(it.unical.mat.jdlv.util.JdlvProperties.getInstance().getDlvExecutablePath());
 _JDLV_PROGRAM_coloringModule.addText(_JDLV_PROGRAM_BUFFER_coloringModule.toString());
 _JDLV_PROGRAM_coloringModule.getFiles().clear();
-_JDLV_PROGRAM_coloringModule.addFile("./src/SokobanSolver2");
+_JDLV_PROGRAM_coloringModule.addFile("./src/progetto.txt");
 _JDLV_PROGRAM_BUFFER_coloringModule.append("");
 _JDLV_INVOCATION_coloringModule.setInputProgram(_JDLV_PROGRAM_coloringModule);
 it.unical.mat.wrapper.ModelBufferedHandler _BUFFERED_HANDLER_coloringModule=new it.unical.mat.wrapper.ModelBufferedHandler(_JDLV_INVOCATION_coloringModule);
-it.unical.mat.jdlv.program.JDLV_Logger.getInstance().logInfoMessage("Start execution coloringModule program: executablePath='"+it.unical.mat.jdlv.util.JdlvProperties.getInstance().getDlvExecutablePath()+"', options='"+_JDLV_INVOCATION_coloringModule.getOptionsString()+"'"+'\n'+"Code execution: "+it.unical.mat.jdlv.program.JDLV_Logger.getInstance().getPrettyCode(_JDLV_INVOCATION_coloringModule.getInputProgram().getCompleteText(),0)+'\n'+"Files execution: ./src/SokobanSolver2");
+it.unical.mat.jdlv.program.JDLV_Logger.getInstance().logInfoMessage("Start execution coloringModule program: executablePath='"+it.unical.mat.jdlv.util.JdlvProperties.getInstance().getDlvExecutablePath()+"', options='"+_JDLV_INVOCATION_coloringModule.getOptionsString()+"'"+'\n'+"Code execution: "+it.unical.mat.jdlv.program.JDLV_Logger.getInstance().getPrettyCode(_JDLV_INVOCATION_coloringModule.getInputProgram().getCompleteText(),0)+'\n'+"Files execution: ./src/progetto.txt");
 _JDLV_INVOCATION_coloringModule.run();
 while(_BUFFERED_HANDLER_coloringModule.hasMoreModels()){
 it.unical.mat.wrapper.Model _temporary_JDLV_MODELcoloringModule=_BUFFERED_HANDLER_coloringModule.nextModel();
